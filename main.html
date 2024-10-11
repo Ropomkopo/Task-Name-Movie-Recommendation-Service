@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendation Service</title>
+</head>
+<body>
+    <h1>Movie Recommendation Service</h1>
+
+    <!-- Форма для введення рейтингу -->
+    <h2>Rate a Movie</h2>
+    <form id="rateForm">
+        <label for="userId">User ID:</label>
+        <input type="text" id="userId" name="userId"><br>
+        <label for="movieId">Movie ID:</label>
+        <input type="text" id="movieId" name="movieId"><br>
+        <label for="rating">Rating (1-5):</label>
+        <input type="number" id="rating" name="rating" min="1" max="5"><br>
+        <button type="submit">Submit Rating</button>
+    </form>
+
+    <h2>Get Movie Recommendations</h2>
+    <form id="recommendForm">
+        <label for="recommendUserId">User ID:</label>
+        <input type="text" id="recommendUserId" name="recommendUserId"><br>
+        <button type="submit">Get Recommendations</button>
+    </form>
+
+    <h3>Recommendations:</h3>
+    <ul id="recommendationsList"></ul>
+
+    <script>
+        // Обробка форми рейтингу
+        document.getElementById('rateForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const userId = document.getElementById('userId').value;
+            const movieId = document.getElementById('movieId').value;
+            const rating = document.getElementById('rating').value;
+
+            const response = await fetch('/rate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, movie_id: movieId, rating: Number(rating) })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        });
+
+        // Обробка форми рекомендацій
+        document.getElementById('recommendForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const userId = document.getElementById('recommendUserId').value;
+
+            const response = await fetch('/recommend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId })
+            });
+
+            const result = await response.json();
+            const recommendationsList = document.getElementById('recommendationsList');
+            recommendationsList.innerHTML = '';
+            result.recommended_movies.forEach(movie => {
+                const listItem = document.createElement('li');
+                listItem.textContent = movie;
+                recommendationsList.appendChild(listItem);
+            });
+        });
+    </script>
+</body>
+</html>
