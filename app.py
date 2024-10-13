@@ -13,14 +13,17 @@ ratings_data = [
     {"user_id": "user6", "movie_id": "test2", "rating": 3},
     {"user_id": "user3", "movie_id": "test1", "rating": 5},
     {"user_id": "user7", "movie_id": "test5", "rating": 4},
-    {"user_id": "user8", "movie_id": "test6", "rating": 5},
+    {"user_id": "user3", "movie_id": "test6", "rating": 5},
 ]
 
 ratings_df = pd.DataFrame(ratings_data)
 
 @app.route('/all_data', methods=['GET'])
 def get_all_data():
-    return jsonify({"message": "All data retrieved successfully!", "data": ratings_data}), 200
+    try:
+        return jsonify({"message": "All data retrieved successfully!", "data": ratings_df.to_dict(orient='records')}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # API маршрут для рекомендації фільмів
 @app.route('/recommend', methods=['GET'])
@@ -65,24 +68,27 @@ def recommend_movies():
 @app.route('/movies/new_movie', methods=['POST'])
 def add_movie_rating():
     global ratings_df
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    if not data or 'user_id' not in data or 'movie_id' not in data or 'rating' not in data:
-        return jsonify({"error": "Please provide 'user_id', 'movie_id', and 'rating'"}), 400
+        if not data or 'user_id' not in data or 'movie_id' not in data or 'rating' not in data:
+            return jsonify({"error": "Please provide 'user_id', 'movie_id', and 'rating'"}), 400
 
-    # Створення нового запису
-    new_rating = {
-        "user_id": data['user_id'],
-        "movie_id": data['movie_id'],
-        "rating": data['rating']
-    }
+        # Створення нового запису
+        new_rating = {
+            "user_id": data['user_id'],
+            "movie_id": data['movie_id'],
+            "rating": data['rating']
+        }
 
-    # Додавання запису до DataFrame
-    ratings_df = ratings_df._append(new_rating, ignore_index=True)  # Використання DataFrame append
+        # Додавання запису до DataFrame
+        ratings_df = ratings_df._append(new_rating, ignore_index=True)  # Використання DataFrame append
 
-    # Відповідь із підтвердженням
-    return jsonify({"message": "Movie rating added successfully", "new_rating": new_rating}), 201
+        # Відповідь із підтвердженням
+        return jsonify({"message": "Movie rating added successfully", "new_rating": new_rating}), 201
 
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
